@@ -51,8 +51,8 @@ export async function listExpensesInMonth(year: number, monthIndex: number): Pro
     .where("date")
     .between(start, endExclusive, true, false)
     .toArray();
-  // Newest first within the month; the primary key breaks ties so the order is stable.
-  return rows.sort((a, b) => (a.date === b.date ? b.createdAtSafe - a.createdAtSafe : b.date.localeCompare(a.date)));
+  // Newest first within the month; the id breaks ties so the order is stable.
+  return rows.sort((a, b) => (a.date === b.date ? (a.id < b.id ? 1 : -1) : b.date.localeCompare(a.date)));
 }
 
 export type NewExpense = {
