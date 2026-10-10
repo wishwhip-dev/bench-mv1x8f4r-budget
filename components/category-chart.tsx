@@ -50,7 +50,7 @@ export function CategoryChart({ expenses }: { expenses: Expense[] }) {
             interval={0}
             fontSize={11}
           />
-          <YAxis tickFormatter={(value: number) => formatMoney(value * 100)} fontSize={11} width={56} tickLine={false} axisLine={false} />
+          <YAxis tickFormatter={(value: number) => (value >= 1000 ? `${value / 1000}k` : `${value}`)} fontSize={11} width={40} tickLine={false} axisLine={false} />
           <ChartTooltip
             content={<ChartTooltipContent formatter={(value) => formatMoney(Number(value) * 100)} />}
           />
