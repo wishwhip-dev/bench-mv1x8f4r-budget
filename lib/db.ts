@@ -32,6 +32,15 @@ export function newId(): string {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+/** One row of the small key-value store for bookkeeping, such as the storage-proof marker. */
+export type StorageMetaRow = {
+  key: string;
+  /** Free-form payload for the row's key; the proof marker stores a per-session counter. */
+  session: number;
+};
+
+type Tables = { expenses: Expense; meta: StorageMetaRow };
+
 /**
  * Version 2 exists to reconcile a database an earlier build of this app may have created under a
  * different shape at version 1. Re-declaring the same stores makes Dexie run its 1→2 upgrade and
