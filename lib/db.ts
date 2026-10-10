@@ -7,7 +7,7 @@
  * needs around a failed durable open, because the shared package swallows that error and silently
  * lands in the in-memory fallback, where nothing survives a reload.
  */
-import Dexie, { type Transaction } from "dexie";
+import { type Transaction } from "dexie";
 import {
   defineDatabase,
   isStorageAvailable,
