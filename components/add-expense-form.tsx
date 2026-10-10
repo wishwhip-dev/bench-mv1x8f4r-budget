@@ -115,8 +115,18 @@ export function AddExpenseForm({ onSaved }: { onSaved: (date: string) => void })
           name="date"
           type="date"
           value={date || today}
-          onChange={(event) => setDate(event.target.value)}
+          onChange={(event) => {
+            setDate(event.target.value);
+            if (dateError) setDateError(null);
+          }}
+          aria-invalid={dateError !== null}
+          aria-describedby={dateError ? "expense-date-error" : undefined}
         />
+        {dateError && (
+          <p id="expense-date-error" role="alert" className="text-sm text-destructive">
+            {dateError}
+          </p>
+        )}
       </div>
       <Button type="submit" disabled={pending}>
         {pending ? "Adding…" : "Add expense"}
