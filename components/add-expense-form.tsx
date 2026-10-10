@@ -13,13 +13,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useIsHydrated } from "@/lib/storage/react";
-import { addExpense, CATEGORIES, localDateISO, type Category } from "@/lib/data/expenses";
+import { addExpense, isPlausibleDate, CATEGORIES, localDateISO, type Category } from "@/lib/data/expenses";
+import { formatDateISO } from "@/lib/format";
 
 /**
- * The add-expense form. Renders the categories from the data module, validates the amount
- * inline, and reports the outcome with a toast once the write has actually resolved.
+ * The add-expense form. Renders the categories from the data module, validates the amount and the
+ * date inline, and reports the outcome — with the date it actually used — once the write has
+ * resolved.
  */
-export function AddExpenseForm({ onSaved }: { onSaved: () => void }) {
+export function AddExpenseForm({ onSaved }: { onSaved: (date: string) => void }) {
   const hydrated = useIsHydrated();
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<Category["id"]>("food");
