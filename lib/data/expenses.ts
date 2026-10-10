@@ -89,8 +89,8 @@ export async function addExpense({ amountCents, category, date }: NewExpense): P
   if (!isCategory(category)) {
     throw new Error("Choose one of the categories.");
   }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    throw new Error("Choose a date.");
+  if (!isPlausibleDate(date)) {
+    throw new Error("Choose a real date between 1970 and 2100.");
   }
   const id = newId();
   const table = await expenses();
