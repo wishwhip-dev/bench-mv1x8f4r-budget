@@ -30,6 +30,26 @@ export function Tracker() {
   // point the visitor at the month it actually went to.
   const [justSavedDate, setJustSavedDate] = useState<string | null>(null);
 
+  // The page says expenses survive a reload only when it has seen it happen: a marker left by an
+  // earlier visit reading back from the database this visit opened. Checked once storage is durable.
+  const [storageProof, setStorageProof] = useState<"proven" | "unproven" | undefined>(undefined);
+
+  useEffect(() => {
+    if (status !== "durable") return;
+    let cancelled = false;
+    void (async () => {
+      const survived = await readStorageProof();
+      await writeStorageProof();
+      if (!cancelled) setStorageProof(survived ? "proven" : "unproven");
+    })().catch((error) => {
+      console.warn("[tracker] The storage check failed.", error);
+      if (!cancelled) setStorageProof("unproven");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [status]);
+
   const { year, month } = useMemo(() => {
     if (!hydrated) return { year: 0, month: 0 };
     const now = new Date();
