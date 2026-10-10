@@ -229,11 +229,13 @@ export function Tracker() {
         </CardContent>
       </Card>
 
-      {status === "durable" && (
+      {status === "durable" && storageProof && (
         <p className="text-center text-xs text-muted-foreground">
-          {database.openOutcome() === "retried"
-            ? "Your expenses are saved in this browser — the database needed a second attempt to open."
-            : "Your expenses are saved in this browser."}{" "}
+          {storageProof === "proven"
+            ? database.openOutcome() === "retried"
+              ? "Your expenses are saved in this browser — the database needed a second attempt to open."
+              : "Your expenses are saved in this browser."
+            : "Expenses you add will be saved in this browser."}{" "}
           Database schema v{database.schemaVersion}.
         </p>
       )}
