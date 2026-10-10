@@ -82,14 +82,14 @@ export function AddExpenseForm({ onSaved }: { onSaved: (date: string) => void })
           value={amount}
           onChange={(event) => {
             setAmount(event.target.value);
-            if (error) setError(null);
+            if (amountError) setAmountError(null);
           }}
-          aria-invalid={error !== null}
-          aria-describedby={error ? "expense-amount-error" : undefined}
+          aria-invalid={amountError !== null}
+          aria-describedby={amountError ? "expense-amount-error" : undefined}
         />
-        {error && (
+        {amountError && (
           <p id="expense-amount-error" role="alert" className="text-sm text-destructive">
-            {error}
+            {amountError}
           </p>
         )}
       </div>
