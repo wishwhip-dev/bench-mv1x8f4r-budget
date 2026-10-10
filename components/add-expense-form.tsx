@@ -26,7 +26,8 @@ export function AddExpenseForm({ onSaved }: { onSaved: (date: string) => void })
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<Category["id"]>("food");
   const [date, setDate] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [amountError, setAmountError] = useState<string | null>(null);
+  const [dateError, setDateError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
   const today = hydrated ? localDateISO(new Date()) : "";
@@ -35,17 +36,17 @@ export function AddExpenseForm({ onSaved }: { onSaved: (date: string) => void })
     event.preventDefault();
     const trimmed = amount.trim();
     if (trimmed === "") {
-      setError("Enter an amount.");
+      setAmountError("Enter an amount.");
       return;
     }
     const value = Number(trimmed);
     if (!Number.isFinite(value) || value <= 0) {
-      setError("Enter a positive amount, like 12.50.");
+      setAmountError("Enter a positive amount, like 12.50.");
       return;
     }
     const chosenDate = date || today;
     if (!isPlausibleDate(chosenDate)) {
-      setError("Enter a real date between 1970 and 2100.");
+      setDateError("Enter a real date between 1970 and 2100.");
       return;
     }
     setPending(true);
