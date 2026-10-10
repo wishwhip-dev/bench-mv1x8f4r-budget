@@ -1,0 +1,18 @@
+# Plan
+
+Goal: A monthly spending tracker. I add an expense with an amount, a category (food, transport, home, fun or other) and a date, and see this month's total and a chart of spending by category. I can switch to earlier months and delete an expense I got wrong. Everything survives a reload and is comfortable on a phone.
+
+1. The home page shows the app name from identity.ts, the current month's total as a large readout (showing 0.00 when the month is empty), an 'Add expense' button, the month navigation and the expense list — all visible on load with no expense data yet, with a short empty-state message when the month has no entries
+2. An 'Add expense' form on the home page takes an amount (decimals accepted: 12.50 saves and displays as 12.50), a category chosen from the five options (food, transport, home, fun, other) via a labelled select, and a date (defaulting to today), and submitting it with the 'Add' button closes the form and shows the new expense in the month's list with its amount, category and date
+3. The five expense categories live in a data module under lib/data (with the Dexie queries for adding, listing and deleting expenses), and the form, list and chart components render from it rather than hard-coding categories
+4. Below or beside the total, a pie or bar chart built with the shipped chart components shows this month's spending split by category, updating as soon as an expense is added or deleted; in a month with no expenses the chart area shows a 'no spending recorded' message instead of an empty or broken chart
+5. The header offers previous- and next-month controls plus a visible month label (for example 'January 2025'); pressing previous shows that month's total, chart and expense list, next is disabled or hidden on the current month, and an expense saved with a date in a different month appears when that month is selected
+6. Each expense row has a 'Delete' button labelled as destructive; pressing it removes the row from the list, the month's total and chart update to exclude it, and deleting the last expense in a month returns the month to its empty state with the total back at 0.00
+7. Adding and deleting expenses write to the provided Dexie database through the app's data module: after adding two expenses and deleting one, reloading the page still shows the remaining expense, its amount, category and date, and the correct month total
+8. The expense list for a month shows each entry's amount, category and date in a readable list or table, ordered by date, with the month's total shown as a money readout with two decimal places above it; a month with 20 or more entries renders them all in order without anything cut off
+9. The whole page lays out comfortably at a 390px-wide phone viewport: the form, total, chart and list stack in one column, all controls are at least 32px tall, and nothing overflows horizontally
+10. app/identity.ts is updated with the app's name (a real product name, not 'generated-next-app') and a description matching what the app is, so the browser tab title shows that name
+11. After submitting the add form or a delete, a toast confirms the action; submitting the add form with an empty, non-numeric or non-positive amount shows a validation message on the form instead of saving
+12. Navigating directly to the home page URL with no prior interaction renders the current month with the form and controls usable, and the previously saved expenses for that month are listed
+
+These are the outcomes this task is judged against.
