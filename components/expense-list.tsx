@@ -9,13 +9,12 @@ import { formatDateISO, formatMoney } from "@/lib/format";
  * The month's expense list, newest first, one row per expense with its amount, category and date
  * and a destructive Delete button. Rows render straight from the data module's category list.
  */
-export function ExpenseList({ expenses, onDeleted }: { expenses: Expense[]; onDeleted: () => void }) {
+export function ExpenseList({ expenses }: { expenses: Expense[] }) {
   async function handleDelete(expense: Expense) {
     try {
       await deleteExpense(expense.id);
       const label = CATEGORIES.find((category) => category.id === expense.category)?.label ?? expense.category;
       toast.success(`Deleted the ${label} expense of ${formatMoney(expense.amountCents)}`);
-      onDeleted();
     } catch (cause) {
       toast.error(`Could not delete the expense: ${cause instanceof Error ? cause.message : "unknown error"}`);
     }

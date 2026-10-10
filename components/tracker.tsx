@@ -152,7 +152,7 @@ export function Tracker() {
                 Nothing recorded yet. Add your first expense for {formatMonthName(month)} above.
               </p>
             ) : (
-              <ExpenseList expenses={rows} onDeleted={undefined} />
+              <ExpenseList expenses={rows} />
             )
           ) : (
             <div className="grid gap-3">
