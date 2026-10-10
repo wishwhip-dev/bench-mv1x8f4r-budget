@@ -224,9 +224,9 @@ async function readyWithRetry(): Promise<AppDatabase<Tables>> {
   return first;
 }
 
-let opening: Promise<AppDatabase<{ expenses: Expense }>> | undefined;
+let opening: Promise<AppDatabase<Tables>> | undefined;
 
-export const database: DatabaseHandle<{ expenses: Expense }> & {
+export const database: DatabaseHandle<Tables> & {
   openOutcome: () => OpenOutcome | undefined;
 } = {
   name: inner.name,
