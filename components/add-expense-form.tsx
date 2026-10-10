@@ -59,7 +59,8 @@ export function AddExpenseForm({ onSaved }: { onSaved: (date: string) => void })
       toast.success(`Added ${categoryLabelOf(category)} expense of ${format(value)} on ${formatDateISO(chosenDate)}`);
       setAmount("");
       setDate("");
-      setError(null);
+      setAmountError(null);
+      setDateError(null);
       onSaved(chosenDate);
     } catch (cause) {
       toast.error(`Could not save the expense: ${cause instanceof Error ? cause.message : "unknown error"}`);
