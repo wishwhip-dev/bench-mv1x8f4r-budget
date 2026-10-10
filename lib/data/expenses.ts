@@ -45,6 +45,24 @@ export function localDateISO(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+/**
+ * A date the form can actually mean: a real calendar day between 1970 and 2100. The native date
+ * input normally guarantees this, but a mangled or typed-in date (say a year of 1010) is still a
+ * valid day — it would silently file the expense a millennium away from where the visitor is
+ * looking, so it is rejected instead.
+ */
+export function isPlausibleDate(date: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+  const [year, month, day] = date.split("-").map(Number);
+  if (year < 1970 || year > 2100 || month < 1 || month > 12) return false;
+  return day >= 1 && day <= new Date(year, month, 0).getDate();
+}
+
+/** "2026-10-03" → the calendar month it belongs to. */
+export function monthOfDate(date: string): { year: number; monthIndex: number } {
+  return { year: Number(date.slice(0, 4)), monthIndex: Number(date.slice(5, 7)) - 1 };
+}
+
 /** Every expense dated inside the given local calendar month (monthIndex is 0-based). */
 export async function listExpensesInMonth(year: number, monthIndex: number): Promise<Expense[]> {
   const start = `${year}-${`${monthIndex + 1}`.padStart(2, "0")}-01`;
