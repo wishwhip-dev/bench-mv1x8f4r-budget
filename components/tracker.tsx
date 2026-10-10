@@ -178,9 +178,14 @@ export function Tracker() {
         <CardContent>
           {hydrated && !isLoading ? (
             rows.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Nothing recorded yet. Add your first expense for {formatMonthName(month)} above.
-              </p>
+              <div className="grid gap-3">
+                <p className="text-sm text-muted-foreground">
+                  Nothing recorded yet. Add your first expense for {formatMonthName(month)} above.
+                </p>
+                {latest && (monthOfDate(latest.date).year !== year || monthOfDate(latest.date).monthIndex !== month) && (
+                  <MonthJump lead="Your latest expense is in" date={latest.date} onGo={() => goToMonth(latest.date)} />
+                )}
+              </div>
             ) : (
               <ExpenseList expenses={rows} />
             )
@@ -192,6 +197,46 @@ export function Tracker() {
           )}
         </CardContent>
       </Card>
+
+      {status === "durable" && (
+        <p className="text-center text-xs text-muted-foreground">Your expenses are saved in this browser.</p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * One line pointing at a month other than the one on screen: the month an expense just went to,
+ * or the month the tracker's most recent expense lives in, with a button that goes there.
+ */
+function MonthJump({
+  lead,
+  date,
+  onGo,
+  onDismiss,
+}: {
+  lead: string;
+  date: string;
+  onGo: () => void;
+  onDismiss?: () => void;
+}) {
+  const target = monthOfDate(date);
+  const label = formatMonth(target.year, target.monthIndex);
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm">
+      <p>
+        {lead} {label}.
+      </p>
+      <div className="flex items-center gap-1">
+        <Button variant="outline" size="sm" onClick={onGo}>
+          Go to {label}
+        </Button>
+        {onDismiss && (
+          <Button variant="ghost" size="icon" className="size-8" aria-label="Dismiss notice" onClick={onDismiss}>
+            <X aria-hidden="true" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
