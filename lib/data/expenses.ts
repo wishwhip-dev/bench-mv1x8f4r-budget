@@ -75,6 +75,12 @@ export async function listExpensesInMonth(year: number, monthIndex: number): Pro
   return rows.sort((a, b) => (a.date === b.date ? (a.id < b.id ? 1 : -1) : b.date.localeCompare(a.date)));
 }
 
+/** The most recent expense anywhere in the database, whatever month it belongs to. */
+export async function latestExpense(): Promise<Expense | undefined> {
+  const table = await expenses();
+  return (await table.orderBy("date").last()) ?? undefined;
+}
+
 export type NewExpense = {
   /** Minor units (cents). */
   amountCents: number;
