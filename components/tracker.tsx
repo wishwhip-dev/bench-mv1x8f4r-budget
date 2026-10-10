@@ -80,6 +80,16 @@ export function Tracker() {
         </Alert>
       )}
 
+      {status === "durable" && database.openOutcome() === "repaired" && (
+        <Alert variant="destructive">
+          <AlertTitle>Your saved database was repaired</AlertTitle>
+          <AlertDescription>
+            The saved database could not be opened as it was, so it has been recreated. Earlier
+            entries could not be recovered; everything you add from now on is kept.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Card>
         <CardHeader className="gap-2">
           <div className="flex items-center justify-between gap-2">
