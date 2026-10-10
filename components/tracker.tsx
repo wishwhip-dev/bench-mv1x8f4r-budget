@@ -128,13 +128,22 @@ export function Tracker() {
         </CardContent>
       </Card>
 
+      {savedElsewhere && (
+        <MonthJump
+          lead="Saved to"
+          date={justSavedDate}
+          onGo={() => goToMonth(justSavedDate)}
+          onDismiss={() => setJustSavedDate(null)}
+        />
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Add expense</CardTitle>
         </CardHeader>
         <CardContent>
           {formOpen ? (
-            <AddExpenseForm onSaved={() => setFormOpen(false)} />
+            <AddExpenseForm onSaved={(date) => { setFormOpen(false); setJustSavedDate(date); }} />
           ) : (
             <Button className="w-full" onClick={() => setFormOpen(true)}>
               Add expense
