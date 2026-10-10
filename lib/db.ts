@@ -4,8 +4,9 @@
  * The reusable half of the setup is in `lib/storage/` and is not edited. This file is the half
  * that describes the product: which tables exist, what is indexed, how the schema has changed over
  * time, and what a first visit starts with. It also wraps the shared handle with what the product
- * needs around a failed durable open, because the shared package swallows that error and silently
- * lands in the in-memory fallback, where nothing survives a reload.
+ * needs around the durable open, because the shared package swallows a failed one and silently
+ * lands in the in-memory fallback, where nothing survives a reload. Nothing is reported as
+ * "saved in this browser" here unless the browser's own IndexedDB really holds the database.
  */
 import { type Transaction } from "dexie";
 import {
@@ -71,6 +72,45 @@ export type OpenOutcome = "opened" | "retried" | "repaired" | "refused";
 let openOutcome: OpenOutcome | undefined;
 
 /**
+ * Asks the browser's own IndexedDB whether it really holds this database — an independent
+ * check on the shared package's word. Resolves `false` only when the browser answered and the
+ * database is not there; `undefined` when the browser cannot be asked (API missing, timed out,
+ * errored), in which case the shared open's answer stands.
+ */
+async function realStoreHasDatabase(): Promise<boolean | undefined> {
+  try {
+    const factory = globalThis.indexedDB;
+    if (!factory || typeof factory.databases !== "function") return undefined;
+    const listed = await Promise.race([
+      factory.databases(),
+      new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 1000)),
+    ]);
+    if (!listed) return undefined;
+    return listed.some((entry) => entry.name === inner.name);
+  } catch (error) {
+    console.warn("[db] Could not ask the browser's IndexedDB what it holds.", error);
+    return undefined;
+  }
+}
+
+/**
+ * Asks the browser to not evict the database under storage pressure. Chrome and Safari keep
+ * best-effort storage on a eviction list until this is granted; Dexie's own guide recommends it
+ * for anything meant to keep data. Refusal changes nothing the visitor can act on, so the
+ * answer is only logged.
+ */
+async function requestPersistence(): Promise<void> {
+  try {
+    const granted = await globalThis.navigator?.storage?.persist?.();
+    if (granted === false) {
+      console.warn("[db] The browser declined to make storage persistent; it may evict the database under pressure.");
+    }
+  } catch (error) {
+    console.warn("[db] The storage persistence request failed.", error);
+  }
+}
+
+/**
  * Deletes the browser's copy of this database. Resolves false instead of throwing, and gives up
  * after two seconds rather than hanging the app on a delete another connection holds open.
  */
@@ -100,33 +140,59 @@ function deleteStoredDatabase(): Promise<boolean> {
  * The shared package falls back to an in-memory database after a single failed `open()` — the
  * right answer for a browser that refuses IndexedDB, but that same silent fallback is also what
  * an unopenable stored database looks like (an earlier schema at the same version, say), and
- * there everything the visitor adds is gone on reload. So when the browser itself claims to have
- * IndexedDB, recover before accepting the fallback: first a plain reopen, for a transient error;
- * then, if the durable open still will not go through, deleting the stored database that cannot
- * be opened and starting fresh. Each outcome is recorded and said on screen.
+ * there everything the visitor adds is gone on reload. So the wrapper recovers before accepting
+ * the fallback: a plain reopen for a transient error, then deleting the stored database that
+ * cannot be opened and starting fresh. A "durable" answer is also confirmed against the
+ * browser's own IndexedDB before the page is allowed to claim it. Each outcome is recorded and
+ * said on screen.
  */
 async function readyWithRetry(): Promise<AppDatabase<{ expenses: Expense }>> {
   openOutcome = undefined;
   const first = await inner.ready();
-  if (inner.mode() === "durable" || !isStorageAvailable()) {
-    openOutcome = "opened";
+
+  /** Accepts the current durable open if the browser's own store confirms it. */
+  const acceptDurable = async (outcome: OpenOutcome): Promise<boolean> => {
+    if ((await realStoreHasDatabase()) === false) {
+      console.warn(
+        `[db] The open reported durable storage, but the browser's IndexedDB does not list "${inner.name}".`,
+      );
+      await inner.close();
+      return false;
+    }
+    openOutcome = outcome;
+    void requestPersistence();
+    return true;
+  };
+
+  if (!isStorageAvailable()) {
+    // No IndexedDB API at all. The memory fallback is the honest answer and the page says so.
+    openOutcome = "refused";
+    return first;
+  }
+
+  if (inner.mode() === "durable" && (await acceptDurable("opened"))) {
     return inner.current() ?? first;
   }
 
-  console.warn("[db] The browser has IndexedDB but the durable open failed; retrying.");
+  if (inner.mode() !== "durable") {
+    console.warn("[db] The browser has IndexedDB but the durable open failed; retrying.");
+  }
 
+  // Recovery step 1: a plain reopen — a transient failure looks exactly like a swallowed one.
   try {
     await inner.close();
     await new Promise((resolve) => setTimeout(resolve, 250));
     await inner.ready();
-    if (inner.mode() === "durable") {
-      openOutcome = "retried";
+    if (inner.mode() === "durable" && (await acceptDurable("retried"))) {
       return inner.current() ?? first;
     }
   } catch (error) {
     console.warn("[db] The retry open also failed.", error);
   }
 
+  // Recovery step 2: the stored database cannot be opened (or is not the one that was opened).
+  // Deleting it loses whatever it held, but that data was unreadable anyway, and a fresh
+  // database keeps everything the visitor adds from here on.
   try {
     await inner.close();
     const deleted = await deleteStoredDatabase();
@@ -135,8 +201,7 @@ async function readyWithRetry(): Promise<AppDatabase<{ expenses: Expense }>> {
         `[db] The "${inner.name}" database could not be opened; it was recreated. Its unreadable contents are gone.`,
       );
       await inner.ready();
-      if (inner.mode() === "durable") {
-        openOutcome = "repaired";
+      if (inner.mode() === "durable" && (await acceptDurable("repaired"))) {
         return inner.current() ?? first;
       }
     }
