@@ -44,6 +44,10 @@ export function AddExpenseForm({ onSaved }: { onSaved: (date: string) => void })
       return;
     }
     const chosenDate = date || today;
+    if (!isPlausibleDate(chosenDate)) {
+      setError("Enter a real date between 1970 and 2100.");
+      return;
+    }
     setPending(true);
     try {
       await addExpense({
@@ -51,11 +55,11 @@ export function AddExpenseForm({ onSaved }: { onSaved: (date: string) => void })
         category,
         date: chosenDate,
       });
-      toast.success(`Added ${categoryLabelOf(category)} expense of ${format(value)}`);
+      toast.success(`Added ${categoryLabelOf(category)} expense of ${format(value)} on ${formatDateISO(chosenDate)}`);
       setAmount("");
       setDate("");
       setError(null);
-      onSaved();
+      onSaved(chosenDate);
     } catch (cause) {
       toast.error(`Could not save the expense: ${cause instanceof Error ? cause.message : "unknown error"}`);
     } finally {
