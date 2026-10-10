@@ -209,7 +209,12 @@ export function Tracker() {
       </Card>
 
       {status === "durable" && (
-        <p className="text-center text-xs text-muted-foreground">Your expenses are saved in this browser.</p>
+        <p className="text-center text-xs text-muted-foreground">
+          {database.openOutcome() === "retried"
+            ? "Your expenses are saved in this browser — the database needed a second attempt to open."
+            : "Your expenses are saved in this browser."}{" "}
+          Database schema v{database.schemaVersion}.
+        </p>
       )}
     </div>
   );
