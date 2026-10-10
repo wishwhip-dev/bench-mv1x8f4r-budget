@@ -4,6 +4,8 @@
  */
 import { database, newId, type Expense } from "@/lib/db";
 
+export type { Expense };
+
 export type Category = {
   id: string;
   label: string;
