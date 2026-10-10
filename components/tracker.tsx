@@ -87,7 +87,7 @@ export function Tracker() {
               variant="outline"
               size="icon"
               aria-label="Previous month"
-              onClick={() => setOffset((value) => value - 1)}
+              onClick={() => moveMonth(-1)}
             >
               <ChevronLeft aria-hidden="true" />
             </Button>
@@ -103,7 +103,7 @@ export function Tracker() {
               size="icon"
               aria-label="Next month"
               disabled={offset >= 0}
-              onClick={() => setOffset((value) => value + 1)}
+              onClick={() => moveMonth(1)}
             >
               <ChevronRight aria-hidden="true" />
             </Button>
