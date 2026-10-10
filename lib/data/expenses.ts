@@ -75,10 +75,20 @@ export async function addExpense({ amountCents, category, date }: NewExpense): P
     throw new Error("Choose a date.");
   }
   const id = newId();
-  await (await expenses()).add({ id, amountCents, category, date });
+  const table = await expenses();
+  await table.add({ id, amountCents, category, date });
+  // Verify the write actually landed in the table before reporting success — a save that did not
+  // commit is reported to the visitor, never silently lost.
+  if (!(await table.get(id))) {
+    throw new Error("The expense did not save. Reload the page and try again.");
+  }
   return id;
 }
 
 export async function deleteExpense(id: string): Promise<void> {
-  await (await expenses()).delete(id);
+  const table = await expenses();
+  await table.delete(id);
+  if (await table.get(id)) {
+    throw new Error("The expense did not delete. Reload the page and try again.");
+  }
 }
