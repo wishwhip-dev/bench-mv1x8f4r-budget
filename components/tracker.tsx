@@ -25,6 +25,9 @@ export function Tracker() {
   const status = useStorageStatus(database);
   const [offset, setOffset] = useState(0);
   const [formOpen, setFormOpen] = useState(true);
+  // The date of the expense just added, kept so an expense saved outside the month on screen can
+  // point the visitor at the month it actually went to.
+  const [justSavedDate, setJustSavedDate] = useState<string | null>(null);
 
   const { year, month } = useMemo(() => {
     if (!hydrated) return { year: 0, month: 0 };
@@ -39,8 +42,26 @@ export function Tracker() {
     [year, month],
   );
 
+  // The newest expense anywhere in the database. An empty month is not the same as an empty
+  // tracker, and the list says so when the history starts (or continues) elsewhere.
+  const { data: latest } = useStoredQuery(database, () => latestExpense(), []);
+
   const rows = expenses ?? [];
   const totalCents = rows.reduce((sum, expense) => sum + expense.amountCents, 0);
+
+  function goToMonth(date: string) {
+    const target = monthOfDate(date);
+    setJustSavedDate(null);
+    setOffset((current) => current + (target.year - year) * 12 + (target.monthIndex - month));
+  }
+
+  function moveMonth(step: number) {
+    setJustSavedDate(null);
+    setOffset((current) => current + step);
+  }
+
+  const savedElsewhere =
+    justSavedDate !== null && (monthOfDate(justSavedDate).year !== year || monthOfDate(justSavedDate).monthIndex !== month);
 
   return (
     <div className="flex flex-col gap-4">
