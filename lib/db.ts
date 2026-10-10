@@ -47,9 +47,9 @@ const inner = defineDatabase<{ expenses: Expense }>({
  */
 async function readyWithRetry(): Promise<AppDatabase<{ expenses: Expense }>> {
   const db = await inner.ready();
-  for (let attempt = 0; attempt < 2 && inner.mode() === "memory" && isStorageAvailable(); attempt++) {
+  if (inner.mode() === "memory" && isStorageAvailable()) {
     await inner.close();
-    await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
+    await new Promise((resolve) => setTimeout(resolve, 250));
     await inner.ready();
   }
   return inner.current() ?? db;
