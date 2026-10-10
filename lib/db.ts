@@ -157,7 +157,7 @@ function deleteStoredDatabase(): Promise<boolean> {
  * browser's own IndexedDB before the page is allowed to claim it. Each outcome is recorded and
  * said on screen.
  */
-async function readyWithRetry(): Promise<AppDatabase<{ expenses: Expense }>> {
+async function readyWithRetry(): Promise<AppDatabase<Tables>> {
   openOutcome = undefined;
   const first = await inner.ready();
 
