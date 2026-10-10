@@ -67,12 +67,14 @@ function upgradeTo2(transaction: Transaction): Promise<unknown> {
     });
 }
 
-const inner = defineDatabase<{ expenses: Expense }>({
+const inner = defineDatabase<Tables>({
   name: "monthly-spending",
   versions: [
     // Only the primary key and the properties queried on: the list and totals filter by `date`.
     { version: 1, stores: { expenses: "id, date" } },
     { version: 2, stores: { expenses: "id, date" }, upgrade: upgradeTo2 },
+    // The proof marker lets a later visit check that rows written earlier really survived.
+    { version: 3, stores: { meta: "key" } },
   ],
 });
 
