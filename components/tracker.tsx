@@ -12,6 +12,7 @@ import { CategoryChart } from "@/components/category-chart";
 import { ExpenseList } from "@/components/expense-list";
 import { database } from "@/lib/db";
 import { latestExpense, listExpensesInMonth, monthOfDate } from "@/lib/data/expenses";
+import { readStorageProof, writeStorageProof } from "@/lib/data/storage-proof";
 import { formatMoney, formatMonth, formatMonthName } from "@/lib/format";
 import { useIsHydrated, useStorageStatus, useStoredQuery } from "@/lib/storage/react";
 
