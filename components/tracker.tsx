@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { AddExpenseForm } from "@/components/add-expense-form";
 import { CategoryChart } from "@/components/category-chart";
 import { ExpenseList } from "@/components/expense-list";
 import { database } from "@/lib/db";
-import { listExpensesInMonth } from "@/lib/data/expenses";
+import { latestExpense, listExpensesInMonth, monthOfDate } from "@/lib/data/expenses";
 import { formatMoney, formatMonth, formatMonthName } from "@/lib/format";
 import { useIsHydrated, useStorageStatus, useStoredQuery } from "@/lib/storage/react";
 
