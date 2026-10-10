@@ -111,7 +111,7 @@ export function AddExpenseForm({ onSaved }: { onSaved: () => void }) {
         />
       </div>
       <Button type="submit" disabled={pending}>
-        {pending ? "Adding…" : "Add"}
+        {pending ? "Adding…" : "Add expense"}
       </Button>
     </form>
   );
